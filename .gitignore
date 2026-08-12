@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime files
+*.pid
+*.pid.lock
+*.seed
+pids/
+
+# User-uploaded and temporary files
+uploads/
+upload/
+tmp/
+temp/
+*.tmp
+
+# Test and coverage output
+coverage/
+.nyc_output/
+
+# Build and deployment output
+dist/
+build/
+.vercel/
+.netlify/
+
+# Tool caches
+.cache/
+.eslintcache
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local certificates and keys
+*.pem
+*.key
+*.cert
+*.crt
