@@ -9,8 +9,6 @@ import multerS3 from 'multer-s3';
 import aws from 'aws-sdk';
 //const config = require('../config.js');
 //import config from '../config.js';
-//const sharp = require('sharp');
-import sharp from 'sharp';
 
 const uploadRouter = express.Router();
 

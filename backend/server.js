@@ -1,7 +1,6 @@
 //entry point of our backend application
 //create a basic express server
 //express: easy and powerful server
-import http from 'http';
 import express from 'express';
 import mongoose from 'mongoose';
 import productRouter from './routers/productRouter.js';
@@ -9,7 +8,6 @@ import userRouter from './routers/userRouter.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import orderRouter from './routers/orderRouter.js';
-import uploadRouter from './routers/uploadRouter.js';
 import shopRouter from './routers/shopRouter.js';
 import categoryRouter from './routers/categoryRouter.js';
 //import paymentRouter from "./routers/paymentRouter.js";
@@ -22,26 +20,31 @@ dotenv.config();
 const app = express();
 app.use(cors());
 
-const httpsServer = http.createServer(app);
-
-app.use(express.json({ limit: '500mb' }));
-app.use(express.urlencoded({ limit: '500mb' }));
+app.use(express.json({ limit: '4mb' }));
+app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGODB_URL, {
-  useNewUrlParser: 'true',
-});
+if (!process.env.MONGODB_URL) {
+  console.error('MONGODB_URL is not configured');
+} else {
+  mongoose
+    .connect(process.env.MONGODB_URL)
+    .then(() => console.log('MongoDB connected'))
+    .catch((error) => console.error('MongoDB connection failed:', error.message));
+}
 
 /*app.get('/', (req, res) => {
     res.send("server is ready");
 });*/
 
-export default {
-  accessKeyId: process.env.accessKeyId || 'accessKeyId',
-  secretAccessKey: process.env.secretAccessKey || 'secretAccessKey',
-};
-
-app.use('/api/uploads', uploadRouter);
+app.use('/api/uploads', async (req, res, next) => {
+  try {
+    const { default: uploadRouter } = await import('./routers/uploadRouter.js');
+    uploadRouter(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
 app.use('/api/users', userRouter);
 app.use('/api/newshop', shopRouter);
 app.use('/api/add/category', categoryRouter);
@@ -60,15 +63,20 @@ app.get('/', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  if (req.protocol == 'http') {
-    res.redirect(301, `https://${req.headers.host}${req.url}`);
+  console.error(err);
+  if (res.headersSent) {
+    next(err);
+    return;
   }
-  next();
-  res.status(500).send({ message: err.message });
+  res.status(err.status || 500).send({ message: err.message || 'Server error' });
 });
 
 const port = process.env.PORT || 5001;
 
-httpsServer.listen(port, () => {
-  console.log(`serve at http://localhost:${port}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`serve at http://localhost:${port}`);
+  });
+}
+
+export default app;
